@@ -2,16 +2,16 @@ class Rule:
     def __init__(self, rule):
         # A -> B
         self.left = rule[0]  # A
-        self.right = rule[1]  # B
+        self.right = rule[1]  # B - в виде массива из нетерминалов/терминалов
 
 
 class States:
     def __init__(self, left, right, index, point):
         # (A -> B•C, i)
-        self.left = left  # nonterminal
-        self.right = right  # right part of rule with point
+        self.left = left  # нетерминал
+        self.right = right  # правая часть правила
         self.i = index  # i
-        self.point = point  # index of point
+        self.point = point  # позиция точки
 
     def equals(self, other):
         return (self.left == other.left and
@@ -32,11 +32,7 @@ class Earley:
         self.word = word
         self.D = {}
         self.length = int(len(word))
-
-        # Приведение правил к удобному для работы виду
-        self.rules = []
-        self.rulesConvert(rules)
-
+        self.rules = rules
         # Инициализация Dшек
         self.initD()
 
@@ -45,7 +41,7 @@ class Earley:
 
         # Проверяем выводимость требуемого слова
         for state in self.D[self.length]:
-            if state.equals(States('S$', 'S', 0, 1)):
+            if state.equals(States('<S$>', ['<S>'], 0, 1)):
                 return True
         return False
 
@@ -56,14 +52,13 @@ class Earley:
             self.tryPredictAndComplete(0)
             if cntLen == len(self.D[0]):
                 break
-
         for i in range(1, self.length + 1):
             self.stage(i)
 
     def initD(self):
         for i in range(0, self.length + 1):
             self.D[i] = set()
-        self.D[0].add(States('S$', 'S', 0, 0))
+        self.D[0].add(States('<S$>', ['<S>'], 0, 0))
 
     def stage(self, i):
         self.scan(i - 1)
@@ -72,13 +67,6 @@ class Earley:
         while len(self.D[i]) != cntLen:
             cntLen = len(self.D[i])
             self.tryPredictAndComplete(i)
-
-    def rulesConvert(self, rules):
-        rules.append('S$ -> S')
-        for rule in rules:
-            parts = str(rule).split(' -> ')
-            for i in str(parts[1]).split('|'):
-                self.rules.append(Rule([parts[0], i]))
 
     def scan(self, i):  # i - кол-во считанных символов в слове(номер рассматриваемого класса D)
         for state in self.D[i]:

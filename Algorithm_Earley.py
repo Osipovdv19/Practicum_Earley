@@ -2,16 +2,15 @@ class Rule:
     def __init__(self, rule):
         # A -> B
         self.left = rule[0]  # A
-        self.right = rule[1]  # B - в виде массива из нетерминалов/терминалов
+        self.right = rule[1]  # B - the array of nonterminals/terminal
 
 
 class States:
     def __init__(self, left, right, index, point):
-        # (A -> B•C, i)
-        self.left = left  # нетерминал
-        self.right = right  # правая часть правила
+        self.left = left  # nonterminal
+        self.right = right  # right part of rule with dot
         self.i = index  # i
-        self.point = point  # позиция точки
+        self.point = point  # index of point
 
     def equals(self, other):
         return (self.left == other.left and
@@ -27,19 +26,19 @@ class Earley:
         self.legnth = 0
         self.D = {}
 
-    # Проверка пренадлежности слова грамматике
+    # Checking the belonging of a word to grammar
     def check(self, word, rules):
         self.word = word
         self.D = {}
         self.length = int(len(word))
         self.rules = rules
-        # Инициализация Dшек
+        # Initialization of D
         self.initD()
 
-        # Основной цикл
+        # Main Loop
         self.runWord()
 
-        # Проверяем выводимость требуемого слова
+        # Checking the output of the required word
         for state in self.D[self.length]:
             if state.equals(States('<S$>', ['<S>'], 0, 1)):
                 return True
@@ -68,12 +67,12 @@ class Earley:
             cntLen = len(self.D[i])
             self.tryPredictAndComplete(i)
 
-    def scan(self, i):  # i - кол-во считанных символов в слове(номер рассматриваемого класса D)
+    def scan(self, i):
         for state in self.D[i]:
             if state.point < len(state.right) and self.word[i] == state.right[state.point]:
                 self.addState(States(state.left, state.right, state.i, state.point + 1), i + 1)
 
-    def predict(self, i):  # i - кол-во считанных символов в слове(номер рассматриваемого класса D)
+    def predict(self, i):
         new = []
         for state in self.D[i]:
             if state.point < len(state.right):
@@ -85,9 +84,9 @@ class Earley:
         for state in new:
             self.addState(state, i)
 
-    def complete(self, i):  # i - кол-во считанных символов в слове(номер рассматриваемого класса D)
+    def complete(self, i):
         new = []
-        # Ищем все ситуации с точкой на конце
+        # Looking for all situations with a dot at the end
         for fstate in self.D[i]:
             if fstate.point == len(fstate.right):
                 for state in self.D[fstate.i]:

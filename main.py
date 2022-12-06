@@ -9,8 +9,10 @@ def main():
         if line == '':
             break
         rules.append(line)
-    algo = Earley()
-    print('The word is deducible' if algo.check(input(), Parser().parse(rules)) else print('The word is not deducible'))
+    if Earley().check(input(), Parser().parse(rules)):
+        print('The word is deducible')
+    else:
+        print('The word is not deducible')
 
 
 if __name__ == "__main__":
